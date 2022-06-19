@@ -16,6 +16,8 @@ namespace APIDOP.Services
     {
         Task<bool> AddUser(RegisterModel model);
         Task<string> LoginUser(LoginModel model);
+
+        string GetToken(ClaimsIdentity identity);
     }
     public class AuthenticateService: IAuthenticateService
     {

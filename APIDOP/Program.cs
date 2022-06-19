@@ -6,6 +6,8 @@ using APIDOP.Models.DB;
 using Microsoft.AspNetCore.Identity;
 using APIDOP.Services;
 using APIDOP;
+using System.Security.Claims;
+using APIDOP.Enums;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +23,11 @@ builder.Services.AddScoped<ISectionsService, SectionsService>();
 
 var connection = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(option => option.UseSqlServer(connection));
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy => policy.RequireClaim(ApplicationRoleNames.Administrator));
+    options.AddPolicy("User", policy => policy.RequireClaim(ApplicationRoleNames.User));
+});
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {

@@ -15,7 +15,7 @@ namespace APIDOP.Controllers
 {
     [Route("api")]
     [ApiController]
-    public class SectionController: ControllerBase
+    public class SectionController : ControllerBase
     {
         private readonly UserManager<User> _userManager;
         private readonly ApplicationDbContext _context;
@@ -33,6 +33,7 @@ namespace APIDOP.Controllers
 
 
         [HttpPost]
+        [Authorize(Policy ="Admin", AuthenticationSchemes = "Bearer")]
         [Route("sections")]
 
         public async Task<IActionResult> AddSection([FromBody] AddSectionModel model)

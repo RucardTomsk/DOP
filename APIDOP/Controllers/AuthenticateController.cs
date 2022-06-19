@@ -14,7 +14,7 @@ namespace APIDOP.Controllers
 {
     [Route("api")]
     [ApiController]
-    public class AuthenticateController: ControllerBase
+    public class AuthenticateController : ControllerBase
     {
         private readonly UserManager<User> _userManager;
         private readonly IAuthenticateService _authenticateService;
@@ -28,6 +28,24 @@ namespace APIDOP.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy ="User", AuthenticationSchemes = "Bearer")]
+        [Route("GetRoleAdmin")]
+        public async Task<IActionResult> GetRoleAdmin()
+        {
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+            var claim = _userManager.GetClaimsAsync(user);
+            if (claim == null)
+                return BadRequest();
+
+            claim.Result.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, ApplicationRoleNames.Administrator));
+
+            var claimsIdentity = new ClaimsIdentity(claim.Result, "Token", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
+
+            var token = _authenticateService.GetToken(claimsIdentity);
+            return Ok(token);
+        }
+
+        [HttpPost]
         [Route("login")]
         public IActionResult Login([FromBody] LoginModel model)
         {
@@ -38,7 +56,7 @@ namespace APIDOP.Controllers
             try
             {
                 var token = _authenticateService.LoginUser(model);
-                if (token != null) 
+                if (token != null)
                 {
                     return Ok(new
                     {
@@ -52,12 +70,13 @@ namespace APIDOP.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError,ex.ToString());
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.ToString());
             }
-        
+
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [Route("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
